@@ -1,12 +1,11 @@
-import multer from "multer"
-
 const User = require("../models/User");
 const Leads = require("../models/Leads")
 const Customers = require("../models/Customers");
 const Documents = require("../models/Documents");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
- 
+
+import multer from "multer" 
 
 // Multer in-memory storage
 const storage = multer.memoryStorage()
