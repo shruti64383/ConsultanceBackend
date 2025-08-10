@@ -99,7 +99,7 @@ const fs = require('fs');
 // };
 
 exports.addDocument = [
-  upload.single("file"),
+  upload.single('pdf'),
   async (req, res) => {
   try {
     if (!req.file) {
