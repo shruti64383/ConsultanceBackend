@@ -4,8 +4,18 @@ const router = express.Router();
 const { addDocument, getAllDocuments, downloadDocument, updateDocumentStatus} = require("../controllers/documentController");
 const {verifyToken} = require("../middleware/authMiddleware");
 // In documentRoutes.js
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+// const multer = require('multer');
+// const upload = multer({ dest: 'uploads/' });
+
+const multer = require("multer");
+
+// Multer in-memory storage
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5 MB limit
+  }
+})
 
 // router.post(
 //   "/:customerEmail/:uploadName", 

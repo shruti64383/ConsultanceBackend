@@ -5,15 +5,15 @@ const Documents = require("../models/Documents");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const multer = require("multer");
+// const multer = require("multer");
 
-// Multer in-memory storage
-const upload = multer({ 
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5 MB limit
-  }
-})
+// // Multer in-memory storage
+// const upload = multer({ 
+//   storage: multer.memoryStorage(),
+//   limits: {
+//     fileSize: 5 * 1024 * 1024 // 5 MB limit
+//   }
+// })
 
 // const express = require('express');
 // const multer = require('multer');
@@ -53,7 +53,7 @@ const upload = multer({
 // });
 
 // const Document = require('../models/documentModel'); // Assuming you have a Document model
-const fs = require('fs');
+//const fs = require('fs');
 
 // exports.addDocument = async (req, res) => {
 //   try {
@@ -136,8 +136,11 @@ const fs = require('fs');
 exports.addDocument = async (req, res) => {
   try {
     if (!req.file) {
+      console.log("Incoming file: not obtained"); 
       return res.status(400).json({ msg: "No file uploaded" });
     }
+
+    console.log("Incoming file:", req.file); 
 
     const { originalname, mimetype, size, buffer } = req.file;
     const { customerEmail, uploadName } = req.params;
@@ -149,6 +152,8 @@ exports.addDocument = async (req, res) => {
       contentType: mimetype,
       size: size
     });
+
+    console.log("Saved document:", newDocument);
 
     res.status(201).json({ 
       msg: "Document uploaded successfully",
