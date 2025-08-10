@@ -97,10 +97,12 @@ exports.getAllServicesForDashboard = async (req, res) => {
 exports.getAllServicesByEmail = async (req, res) => {
     try {
         // Fetch all services for a specific customer
-        const customer = req.params.customerEmail;
+        const decodedEmail = decodeURIComponent(req.params.customerEmail);
+
+        console.log("Decode email: ", decodedEmail, " type: ", typeof decodedEmail);
 
         //const customerData = await Customers.findOne({ email: customer });
-        const services = await Services.find({ customerEmail: customer }).sort({ startDate: -1 });
+        const services = await Services.find({ customerEmail: decodedEmail }).sort({ startDate: -1 });
 
         // Explicitly ensure we're working with an array
         const servicesArray = Array.isArray(services) ? services : [services];
