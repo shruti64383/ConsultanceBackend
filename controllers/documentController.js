@@ -8,8 +8,12 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 
 // Multer in-memory storage
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5 MB limit
+  }
+})
 
 // const express = require('express');
 // const multer = require('multer');
@@ -98,15 +102,44 @@ const fs = require('fs');
 //   }
 // };
 
-exports.addDocument = [
-  upload.single('pdf'),
-  async (req, res) => {
+// exports.addDocument = [
+//   upload.single('pdf'),
+//   async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ msg: "No file uploaded" });
+//     }
+
+//     const { originalname, mimetype, path, size, buffer } = req.file;
+//     const { customerEmail, uploadName } = req.params;
+
+//     const newDocument = await Documents.create({
+//       customerEmail: customerEmail,
+//       name: uploadName,
+//       data: buffer,
+//       contentType: mimetype,
+//       size: size
+//     });
+
+//     res.status(201).json({ 
+//       msg: "Document uploaded successfully",
+//       document: newDocument 
+//     });
+
+//   } catch (error) {
+//     console.error("Upload Error:", error);
+//     res.status(500).json({ msg: "Error uploading document", error: error.message });
+//   }
+// }
+// ]
+
+exports.addDocument = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ msg: "No file uploaded" });
     }
 
-    const { originalname, mimetype, path, size, buffer } = req.file;
+    const { originalname, mimetype, size, buffer } = req.file;
     const { customerEmail, uploadName } = req.params;
 
     const newDocument = await Documents.create({
@@ -126,8 +159,8 @@ exports.addDocument = [
     console.error("Upload Error:", error);
     res.status(500).json({ msg: "Error uploading document", error: error.message });
   }
-}
-]
+};
+
 
 exports.downloadDocument = async (req, res) => {
   try {

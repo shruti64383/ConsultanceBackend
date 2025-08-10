@@ -15,8 +15,14 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post(
   "/:customerEmail/:uploadName", 
+  upload.single("file"), // <-- This processes the file upload
   addDocument
 );
+
+// router.post(
+//   "/:customerEmail/:uploadName", 
+//   addDocument
+// );
 
 // router.post("/:customerEmail/:uploadName", addDocument);
 router.get("/:customerEmail", getAllDocuments);
