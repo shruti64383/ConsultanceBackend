@@ -39,7 +39,9 @@ exports.getAllServices = async (req, res) => {
     try {
         
         const { customerId } = req.params; // Get customerId from URL parameters
-        
+
+        console.log("finding for customerId:", customerId, " type: ", typeof customerId);
+
         // Fetch all services for a specific customer
         const services = await Services.find({ customerId }).sort({ startDate: -1 });
 
