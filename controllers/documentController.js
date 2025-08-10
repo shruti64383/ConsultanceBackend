@@ -5,7 +5,7 @@ const Documents = require("../models/Documents");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-import multer from "multer" 
+const multer = require("multer");
 
 // Multer in-memory storage
 const storage = multer.memoryStorage()
