@@ -1,9 +1,16 @@
+import multer from "multer"
+
 const User = require("../models/User");
 const Leads = require("../models/Leads")
 const Customers = require("../models/Customers");
 const Documents = require("../models/Documents");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+ 
+
+// Multer in-memory storage
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 
 // const express = require('express');
 // const multer = require('multer');
@@ -45,41 +52,71 @@ const jwt = require("jsonwebtoken");
 // const Document = require('../models/documentModel'); // Assuming you have a Document model
 const fs = require('fs');
 
-exports.addDocument = async (req, res) => {
+// exports.addDocument = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ msg: "No file uploaded" });
+//     }
+
+//     const { originalname, mimetype, path, size } = req.file;
+//     //const {  path } = req.file;
+//     const { customerEmail, uploadName } = req.params;
+//     const pdfBuffer = fs.readFileSync(path);
+
+//     // Save to MongoDB
+//     const newDocument = await Documents.create({
+//       customerEmail: customerEmail,
+//       name: uploadName,
+//       data: pdfBuffer,
+//       contentType: mimetype,
+//       size: size
+//     //   uploadDate: new Date(),
+//     //   metadata: req.body // Optional fields (e.g., service, category)
+//     });
+
+//     fs.unlinkSync(path); // Delete temp file
+
+//     // const user = await User.findOne({ email: customerEmail });
+
+//     // const updatedUser = await User.findOneAndUpdate(
+//     //     { email: customerEmail },
+//     //     { $push: { UploadedDocuments: uploadName } },  
+//     //     { new: true }  
+//     // );
+                
+//     // if (!updatedUser) {
+//     //   return res.status(404).json({ msg: "User not found" });
+//     // }
+
+//     res.status(201).json({ 
+//       msg: "Document uploaded successfully",
+//       document: newDocument 
+//     });
+
+//   } catch (error) {
+//     console.error("Upload Error:", error);
+//     res.status(500).json({ msg: "Error uploading document", error: error.message });
+//   }
+// };
+
+exports.addDocument = [
+  upload.single("file"),
+  async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ msg: "No file uploaded" });
     }
 
-    const { originalname, mimetype, path, size } = req.file;
-    //const {  path } = req.file;
+    const { originalname, mimetype, path, size, buffer } = req.file;
     const { customerEmail, uploadName } = req.params;
-    const pdfBuffer = fs.readFileSync(path);
 
-    // Save to MongoDB
     const newDocument = await Documents.create({
       customerEmail: customerEmail,
       name: uploadName,
-      data: pdfBuffer,
+      data: buffer,
       contentType: mimetype,
       size: size
-    //   uploadDate: new Date(),
-    //   metadata: req.body // Optional fields (e.g., service, category)
     });
-
-    fs.unlinkSync(path); // Delete temp file
-
-    // const user = await User.findOne({ email: customerEmail });
-
-    // const updatedUser = await User.findOneAndUpdate(
-    //     { email: customerEmail },
-    //     { $push: { UploadedDocuments: uploadName } },  
-    //     { new: true }  
-    // );
-                
-    // if (!updatedUser) {
-    //   return res.status(404).json({ msg: "User not found" });
-    // }
 
     res.status(201).json({ 
       msg: "Document uploaded successfully",
@@ -90,7 +127,8 @@ exports.addDocument = async (req, res) => {
     console.error("Upload Error:", error);
     res.status(500).json({ msg: "Error uploading document", error: error.message });
   }
-};
+}
+]
 
 exports.downloadDocument = async (req, res) => {
   try {

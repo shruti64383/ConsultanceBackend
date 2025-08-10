@@ -7,9 +7,14 @@ const {verifyToken} = require("../middleware/authMiddleware");
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
+// router.post(
+//   "/:customerEmail/:uploadName", 
+//   upload.single('pdf'), // <-- This processes the file upload
+//   addDocument
+// );
+
 router.post(
   "/:customerEmail/:uploadName", 
-  upload.single('pdf'), // <-- This processes the file upload
   addDocument
 );
 
