@@ -26,6 +26,13 @@ const upload = multer({
 router.post(
   "/:customerEmail/:uploadName", 
   upload.single("file"), // <-- This processes the file upload
+  (req, res, next) => {
+        console.log('Multer processed file:', req.file);
+        if (!req.file) {
+      console.log("No file received in Multer");
+    }
+        next();
+      },
   addDocument
 );
 
