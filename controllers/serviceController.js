@@ -38,7 +38,7 @@ exports.addService = async (req, res) => {
 exports.getAllServices = async (req, res) => {
     try {
         
-        const customerId = Number(req.params.customerId); // Get customerId from URL parameters
+        const { customerId } = req.params; // Get customerId from URL parameters
         
         // Fetch all services for a specific customer
         const services = await Services.find({ customerId }).sort({ startDate: -1 });
