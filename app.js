@@ -30,7 +30,7 @@ app.use(cors({
   exposedHeaders: ['Content-Disposition']
 }));
 
-app.options("*", cors());  
+//app.options("*", cors());  
 
 app.use(cookieParser());
 app.use(express.json({limit: '10mb'}));
