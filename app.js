@@ -10,27 +10,52 @@ const app = express();
 
 connectDB();
 
-const allowedOrigins = [
-  process.env.NEXT_PUBLIC_BASE_URL ,
-  process.env.NEXT_PUBLIC_USER_PANEL_URL,
-  process.env.NEXT_PUBLIC_ADMIN_PANEL_URL,
-];
+// const allowedOrigins = [
+//   process.env.NEXT_PUBLIC_BASE_URL ,
+//   process.env.NEXT_PUBLIC_USER_PANEL_URL,
+//   process.env.NEXT_PUBLIC_ADMIN_PANEL_URL,
+// ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Disposition']
-}));
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   exposedHeaders: ['Content-Disposition']
+// }));
 
-app.options('/*', cors());
+// app.options('/*', cors());
+
+// CORS middleware
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    process.env.NEXT_PUBLIC_BASE_URL,
+    process.env.NEXT_PUBLIC_USER_PANEL_URL,
+    process.env.NEXT_PUBLIC_ADMIN_PANEL_URL
+  ];
+
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin) || !origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  }
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Handle preflight here
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 
 app.use(cookieParser());
 app.use(express.json({limit: '10mb'}));
