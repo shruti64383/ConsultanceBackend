@@ -1,115 +1,115 @@
 const User = require("../models/User");
 const Documents = require("../models/Documents");
-const mongoose = require('mongoose');
-const { GridFSBucket } = require('mongodb');
+// const mongoose = require('mongoose');
+// const { GridFSBucket } = require('mongodb');
 
-// Initialize GridFS bucket
-let gfsBucket;
-const conn = mongoose.connection;
-conn.once('open', () => {
-  gfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
-    bucketName: 'documents',
-    chunkSizeBytes: 255 * 1024, // 255KB chunks
-  });
-});
+// // Initialize GridFS bucket
+// let gfsBucket;
+// const conn = mongoose.connection;
+// conn.once('open', () => {
+//   gfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+//     bucketName: 'documents',
+//     chunkSizeBytes: 255 * 1024, // 255KB chunks
+//   });
+// });
 
-
-exports.addDocument = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-
-    const { customerEmail, uploadName } = req.params;
-    
-    // Create readable stream from buffer
-    const readableStream = new require('stream').Readable();
-    readableStream.push(req.file.buffer);
-    readableStream.push(null);
-
-    // Create upload stream to GridFS
-    const uploadStream = gfsBucket.openUploadStream(req.file.originalname, {
-      metadata: {
-        customerEmail,
-        uploadName,
-        originalName: req.file.originalname,
-        contentType: req.file.mimetype,
-        size: req.file.size,
-        uploadedBy: req.user.id // From auth middleware
-      }
-    });
-
-    // Pipe file data to GridFS
-    readableStream.pipe(uploadStream);
-
-    uploadStream.on('finish', (file) => {
-      res.status(201).json({
-        message: 'File uploaded successfully',
-        fileId: file._id,
-        filename: file.filename
-      });
-    });
-
-    uploadStream.on('error', (error) => {
-      console.error('GridFS upload error:', error);
-      res.status(500).json({ message: 'File upload failed' });
-    });
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
- 
- 
- 
 
 // exports.addDocument = async (req, res) => {
 //   try {
 //     if (!req.file) {
-//       return res.status(400).json({ msg: "No file uploaded" });
+//       return res.status(400).json({ message: 'No file uploaded' });
 //     }
 
-//     const { originalname, mimetype, path, size } = req.file;
-//     //const {  path } = req.file;
 //     const { customerEmail, uploadName } = req.params;
-//     const pdfBuffer = fs.readFileSync(path);
+    
+//     // Create readable stream from buffer
+//     const readableStream = new require('stream').Readable();
+//     readableStream.push(req.file.buffer);
+//     readableStream.push(null);
 
-//     // Save to MongoDB
-//     const newDocument = await Documents.create({
-//       customerEmail: customerEmail,
-//       name: uploadName,
-//       data: pdfBuffer,
-//       contentType: mimetype,
-//       size: size
-//     //   uploadDate: new Date(),
-//     //   metadata: req.body // Optional fields (e.g., service, category)
+//     // Create upload stream to GridFS
+//     const uploadStream = gfsBucket.openUploadStream(req.file.originalname, {
+//       metadata: {
+//         customerEmail,
+//         uploadName,
+//         originalName: req.file.originalname,
+//         contentType: req.file.mimetype,
+//         size: req.file.size,
+//         uploadedBy: req.user.id // From auth middleware
+//       }
 //     });
 
-//     fs.unlinkSync(path); // Delete temp file
+//     // Pipe file data to GridFS
+//     readableStream.pipe(uploadStream);
 
-//     // const user = await User.findOne({ email: customerEmail });
+//     uploadStream.on('finish', (file) => {
+//       res.status(201).json({
+//         message: 'File uploaded successfully',
+//         fileId: file._id,
+//         filename: file.filename
+//       });
+//     });
 
-//     // const updatedUser = await User.findOneAndUpdate(
-//     //     { email: customerEmail },
-//     //     { $push: { UploadedDocuments: uploadName } },  
-//     //     { new: true }  
-//     // );
-                
-//     // if (!updatedUser) {
-//     //   return res.status(404).json({ msg: "User not found" });
-//     // }
-
-//     res.status(201).json({ 
-//       msg: "Document uploaded successfully",
-//       document: newDocument 
+//     uploadStream.on('error', (error) => {
+//       console.error('GridFS upload error:', error);
+//       res.status(500).json({ message: 'File upload failed' });
 //     });
 
 //   } catch (error) {
-//     console.error("Upload Error:", error);
-//     res.status(500).json({ msg: "Error uploading document", error: error.message });
+//     console.error('Upload error:', error);
+//     res.status(500).json({ message: 'Server error', error: error.message });
 //   }
 // };
+ 
+ 
+ 
+
+exports.addDocument = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ msg: "No file uploaded" });
+    }
+
+    const { originalname, mimetype, size, buffer } = req.file;
+    //const {  path } = req.file;
+    const { customerEmail, uploadName } = req.params;
+    //const pdfBuffer = fs.readFileSync(path);
+
+    // Save to MongoDB
+    const newDocument = await Documents.create({
+      customerEmail: customerEmail,
+      name: uploadName,
+      data: buffer,
+      contentType: mimetype,
+      size: size
+    //   uploadDate: new Date(),
+    //   metadata: req.body // Optional fields (e.g., service, category)
+    });
+
+    //fs.unlinkSync(path); // Delete temp file
+
+    // const user = await User.findOne({ email: customerEmail });
+
+    // const updatedUser = await User.findOneAndUpdate(
+    //     { email: customerEmail },
+    //     { $push: { UploadedDocuments: uploadName } },  
+    //     { new: true }  
+    // );
+                
+    // if (!updatedUser) {
+    //   return res.status(404).json({ msg: "User not found" });
+    // }
+
+    res.status(201).json({ 
+      msg: "Document uploaded successfully",
+      document: newDocument 
+    });
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+    res.status(500).json({ msg: "Error uploading document", error: error.message });
+  }
+};
 
 // exports.addDocument = [
 //   upload.single('pdf'),
