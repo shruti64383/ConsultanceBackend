@@ -58,6 +58,22 @@ app.use('/api/leads', leadRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/documents', documentRoutes);
+
+console.log("=== Checking loaded routes ===");
+app._router.stack.forEach((layer) => {
+  if (layer.route) {
+    // Route directly on app
+    console.log(layer.route.path);
+  } else if (layer.name === 'router') {
+    // Routes inside a Router
+    layer.handle.stack.forEach((subLayer) => {
+      if (subLayer.route) {
+        console.log(subLayer.route.path);
+      }
+    });
+  }
+});
+
  
 
 // Test route
