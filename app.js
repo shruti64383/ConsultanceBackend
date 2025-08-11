@@ -70,11 +70,12 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use((err, req, res, next) => {
-      if (err instanceof multer.MulterError) {
-        console.error('Multer Error:', err);
-        return res.status(400).json({ message: err.message });
-      } else if (err) {
-        console.error('Unknown Error:', err);
+  console.log("I am backend");
+  if (err instanceof multer.MulterError) {
+    console.error('Multer Error:', err);
+    return res.status(400).json({ message: err.message });
+  } else if (err) {
+    console.error('Unknown Error:', err);
         return res.status(500).json({ message: 'Internal server error' });
       }
       next();
