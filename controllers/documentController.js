@@ -1,59 +1,68 @@
 const User = require("../models/User");
-const Leads = require("../models/Leads")
-const Customers = require("../models/Customers");
 const Documents = require("../models/Documents");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
+const { GridFSBucket } = require('mongodb');
 
-// const multer = require("multer");
+// Initialize GridFS bucket
+let gfsBucket;
+const conn = mongoose.connection;
+conn.once('open', () => {
+  gfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+    bucketName: 'documents',
+    chunkSizeBytes: 255 * 1024, // 255KB chunks
+  });
+});
 
-// // Multer in-memory storage
-// const upload = multer({ 
-//   storage: multer.memoryStorage(),
-//   limits: {
-//     fileSize: 5 * 1024 * 1024 // 5 MB limit
-//   }
-// })
 
-// const express = require('express');
-// const multer = require('multer');
-// const { MongoClient } = require('mongodb');
-// const fs = require('fs');
+exports.addDocument = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
 
-// const app = express();
-// const upload = multer({ dest: 'uploads/' }); // Temporary storage
+    const { customerEmail, uploadName } = req.params;
+    
+    // Create readable stream from buffer
+    const readableStream = new require('stream').Readable();
+    readableStream.push(req.file.buffer);
+    readableStream.push(null);
 
-// // Connect to MongoDB
-// const uri = "mongodb://localhost:27017";
-// const client = new MongoClient(uri);
-// const db = client.db("documentDB");
-// const documents = db.collection("documents");
+    // Create upload stream to GridFS
+    const uploadStream = gfsBucket.openUploadStream(req.file.originalname, {
+      metadata: {
+        customerEmail,
+        uploadName,
+        originalName: req.file.originalname,
+        contentType: req.file.mimetype,
+        size: req.file.size,
+        uploadedBy: req.user.id // From auth middleware
+      }
+    });
 
-// // Upload Endpoint
-// app.post('/upload', upload.single('pdf'), async (req, res) => {
-//   try {
-//     const { originalname, mimetype, path, size } = req.file;
-//     const pdfBuffer = fs.readFileSync(path); // Read temp file
+    // Pipe file data to GridFS
+    readableStream.pipe(uploadStream);
 
-//     await documents.insertOne({
-//       userId: req.user._id, // From auth middleware
-//       name: originalname,
-//       data: pdfBuffer,
-//       contentType: mimetype,
-//       size: size,
-//       uploadDate: new Date(),
-//       metadata: req.body // Optional: { category, description }
-//     });
+    uploadStream.on('finish', (file) => {
+      res.status(201).json({
+        message: 'File uploaded successfully',
+        fileId: file._id,
+        filename: file.filename
+      });
+    });
 
-//     fs.unlinkSync(path); // Delete temp file
-//     res.status(201).send("PDF uploaded successfully!");
-//   } catch (err) {
-//     res.status(500).send("Error uploading PDF");
-//   }
-// });
+    uploadStream.on('error', (error) => {
+      console.error('GridFS upload error:', error);
+      res.status(500).json({ message: 'File upload failed' });
+    });
 
-// const Document = require('../models/documentModel'); // Assuming you have a Document model
-//const fs = require('fs');
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+ 
+ 
+ 
 
 // exports.addDocument = async (req, res) => {
 //   try {
@@ -132,39 +141,6 @@ const jwt = require("jsonwebtoken");
 //   }
 // }
 // ]
-
-exports.addDocument = async (req, res) => {
-  try {
-    if (!req.file) {
-      console.log("Incoming file: not obtained"); 
-      return res.status(400).json({ msg: "No file uploaded" });
-    }
-
-    console.log("Incoming file:", req.file); 
-
-    const { originalname, mimetype, size, buffer } = req.file;
-    const { customerEmail, uploadName } = req.params;
-
-    const newDocument = await Documents.create({
-      customerEmail: customerEmail,
-      name: uploadName,
-      data: buffer,
-      contentType: mimetype,
-      size: size
-    });
-
-    console.log("Saved document:", newDocument);
-
-    res.status(201).json({ 
-      msg: "Document uploaded successfully",
-      document: newDocument 
-    });
-
-  } catch (error) {
-    console.error("Upload Error:", error);
-    res.status(500).json({ msg: "Error uploading document", error: error.message });
-  }
-};
 
 
 exports.downloadDocument = async (req, res) => {

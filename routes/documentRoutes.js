@@ -1,38 +1,19 @@
 const express = require("express");
 const router = express.Router();
-//const { addCustomer, getAllCustomers, updateCustomerPriority, deleteCustomerById, getCustomerById, updateCustomerStatus} = require("../controllers/customerController");
 const { addDocument, getAllDocuments, downloadDocument, updateDocumentStatus} = require("../controllers/documentController");
 const {verifyToken} = require("../middleware/authMiddleware");
-// In documentRoutes.js
-// const multer = require('multer');
-// const upload = multer({ dest: 'uploads/' });
-
 const multer = require("multer");
 
-// Multer in-memory storage
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5 MB limit
+    fileSize: 10 * 1024 * 1024  
   }
-})
-
-// router.post(
-//   "/:customerEmail/:uploadName", 
-//   upload.single('pdf'), // <-- This processes the file upload
-//   addDocument
-// );
+}) 
 
 router.post(
-  "/:customerEmail/:uploadName", 
-  upload.single("file"), // <-- This processes the file upload
-  (req, res, next) => {
-        console.log('Multer processed file:', req.file);
-        if (!req.file) {
-      console.log("No file received in Multer");
-    }
-        next();
-      },
+  '/:customerEmail/:uploadName',
+  upload.single('file'),  
   addDocument
 );
 
